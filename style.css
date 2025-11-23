@@ -1,0 +1,21 @@
+* { box-sizing: border-box }
+html, body { height: 100% }
+body { margin: 0; background: #0f1220; color: #e6e8f0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji }
+canvas { display: block }
+.hud { position: fixed; top: 16px; left: 0; right: 0; display: flex; align-items: center; justify-content: center; pointer-events: none }
+.scores { display: inline-flex; gap: 8px; padding: 8px 12px; border-radius: 12px; background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); font-weight: 600 }
+.scores .sep { opacity: 0.5 }
+.mode { position: fixed; top: 16px; right: 16px; display: flex; gap: 8px; pointer-events: auto }
+.mode-btn { padding: 6px 10px; border-radius: 10px; border: 0; background: rgba(255,255,255,0.08); color: #e6e8f0; font-weight: 600; cursor: pointer }
+.mode-btn:hover { filter: brightness(1.1) }
+.hint { position: fixed; bottom: 16px; left: 0; right: 0; text-align: center; font-size: 12px; opacity: 0.7 }
+.restart { position: fixed; left: 50%; top: 50%; transform: translate(-50%, -50%); padding: 10px 16px; border-radius: 12px; border: 0; background: #6c5ce7; color: white; font-weight: 700; box-shadow: 0 8px 24px rgba(108,92,231,0.35); cursor: pointer; display: none }
+.restart:hover { filter: brightness(1.1) }
+.health { position: fixed; top: 16px; left: 16px; width: 220px; height: 14px; border-radius: 8px; background: rgba(255,255,255,0.06); box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08); overflow: hidden; pointer-events: none }
+.health .bar { height: 100%; width: 100%; background: linear-gradient(to right, #22c55e, #84cc16) }
+.health .hptext { position: absolute; top: -18px; left: 0; font-size: 12px; opacity: 0.7 }
+#shader { display: none }
+.shader-ui { position: fixed; top: 16px; right: 16px; display: none; flex-direction: column; gap: 10px; padding: 12px; border-radius: 12px; background: rgba(255,255,255,0.06); backdrop-filter: blur(6px); pointer-events: auto; max-width: 240px }
+.shader-ui .panel { display: grid; grid-template-columns: 1fr; gap: 6px }
+.shader-ui .small { font-size: 12px; opacity: 0.7 }
+select, input[type="range"] { width: 100% }

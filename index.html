@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>FunGame1</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="hud">
+<div class="scores">
+<span id="score">0</span>
+<span class="sep">/</span>
+<span id="best">0</span>
+</div>
+<div class="mode">
+  <button id="mode-game" class="mode-btn" aria-label="Game">Game</button>
+  <button id="mode-shader" class="mode-btn" aria-label="Shaders">Shaders</button>
+  </div>
+<div class="hint">Arrows/WASD to move • Space to restart</div>
+</div>
+<div class="health" aria-label="Health">
+  <div id="hpbar" class="bar"></div>
+  <div class="hptext" id="hptext">HP</div>
+</div>
+<canvas id="game"></canvas>
+<canvas id="shader"></canvas>
+<button id="restart" class="restart" aria-label="Restart">Restart</button>
+<div class="shader-ui" id="shader-ui" aria-label="Shader Controls">
+  <div class="panel">
+    <label for="shaderSelect">Shader</label>
+    <select id="shaderSelect">
+      <option value="rings">Rings</option>
+      <option value="checker">Checkerboard</option>
+      <option value="plasma">Plasma</option>
+      <option value="waves">Waves</option>
+    </select>
+  </div>
+  <div class="panel">
+    <label for="param1">Param A</label>
+    <input id="param1" type="range" min="0" max="10" step="0.01" value="3" />
+  </div>
+  <div class="panel">
+    <label for="param2">Param B</label>
+    <input id="param2" type="range" min="0" max="10" step="0.01" value="1.5" />
+  </div>
+  <div class="panel small">Time-based shaders animate automatically</div>
+</div>
+<script src="script.js"></script>
+</body>
+</html>
