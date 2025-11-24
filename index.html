@@ -16,6 +16,9 @@
 <div class="mode">
   <button id="mode-game" class="mode-btn" aria-label="Game">Game</button>
   <button id="mode-shader" class="mode-btn" aria-label="Shaders">Shaders</button>
+  <button id="mode-ideas" class="mode-btn" aria-label="Ideas">Ideas</button>
+  <button id="mode-rrpg" class="mode-btn" aria-label="Runes & Relay">RRPG</button>
+  <button id="mode-arpg" class="mode-btn" aria-label="Arena RPG">ARPG</button>
   </div>
 <div class="hint">Arrows/WASD to move • Space to restart</div>
 </div>
@@ -26,6 +29,50 @@
 <canvas id="game"></canvas>
 <canvas id="shader"></canvas>
 <button id="restart" class="restart" aria-label="Restart">Restart</button>
+<div class="ideas" id="ideas" aria-label="Game Ideas">
+  <div class="ideas-grid">
+    <div class="card">
+      <div class="card-tag action">Action</div>
+      <div class="card-title">Neon Sky Raiders</div>
+      <div class="card-desc">Fast-paced aerial combat with roguelike runs across synthwave skies.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag rpg">RPG</div>
+      <div class="card-title">Echoes of the Hollow</div>
+      <div class="card-desc">Narrative-driven dungeon RPG where choices haunt future floors.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag action">Action</div>
+      <div class="card-title">Blade Circuit</div>
+      <div class="card-desc">Isometric hack-and-dash with time-slice combos and tactical arenas.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag rpg">RPG</div>
+      <div class="card-title">Runes & Relay</div>
+      <div class="card-desc">Party-based JRPG where skills are wired together like circuits.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag action">Action</div>
+      <div class="card-title">Umbra Sprint</div>
+      <div class="card-desc">Shadow parkour platformer with light-bending traversal and bosses.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag rpg">RPG</div>
+      <div class="card-title">Starfarer’s Pact</div>
+      <div class="card-desc">Turn-based space RPG with alliances, betrayal, and contract-driven quests.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag action">Action</div>
+      <div class="card-title">Pulsebreaker</div>
+      <div class="card-desc">Rhythm-infused brawler where combos sync to a reactive soundtrack.</div>
+    </div>
+    <div class="card">
+      <div class="card-tag rpg">RPG</div>
+      <div class="card-title">Cinderveil</div>
+      <div class="card-desc">Open-area ARPG with dynamic weather fables shaping skill trees.</div>
+    </div>
+  </div>
+</div>
 <div class="shader-ui" id="shader-ui" aria-label="Shader Controls">
   <div class="panel">
     <label for="shaderSelect">Shader</label>
@@ -45,6 +92,19 @@
     <input id="param2" type="range" min="0" max="10" step="0.01" value="1.5" />
   </div>
   <div class="panel small">Time-based shaders animate automatically</div>
+</div>
+<div class="rrpg-ui" id="rrpg-ui" aria-label="Runes & Relay Controls">
+  <div class="panel">
+    <button id="rrpg-execute" class="mode-btn" aria-label="Execute">Execute</button>
+    <button id="rrpg-reset" class="mode-btn" aria-label="Reset">Reset</button>
+  </div>
+  <div class="panel small">Click nodes to build a circuit, then Execute.</div>
+</div>
+<div class="arpg-ui" id="arpg-ui" aria-label="Arena RPG HUD">
+  <div class="pill">LMB Fireball</div>
+  <div class="pill">RMB Shield</div>
+  <div class="pill">Shift Dash</div>
+  <div class="pill">E Heal</div>
 </div>
 <script src="script.js"></script>
 </body>

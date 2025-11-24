@@ -3,7 +3,15 @@ const ctx = canvas.getContext('2d');
 const shaderCanvas = document.getElementById('shader');
 const modeGameBtn = document.getElementById('mode-game');
 const modeShaderBtn = document.getElementById('mode-shader');
+const modeIdeasBtn = document.getElementById('mode-ideas');
+const modeRRPGBtn = document.getElementById('mode-rrpg');
+const modeARPGBtn = document.getElementById('mode-arpg');
 const shaderUI = document.getElementById('shader-ui');
+const ideasEl = document.getElementById('ideas');
+const rrpgUI = document.getElementById('rrpg-ui');
+const arpgUI = document.getElementById('arpg-ui');
+const rrpgExecuteBtn = document.getElementById('rrpg-execute');
+const rrpgResetBtn = document.getElementById('rrpg-reset');
 const shaderSelect = document.getElementById('shaderSelect');
 const param1El = document.getElementById('param1');
 const param2El = document.getElementById('param2');
@@ -19,26 +27,61 @@ const hpTextEl = document.getElementById('hptext');
 const restartBtn = document.getElementById('restart');
 function setMode(m) {
   mode = m;
+  modeGameBtn.classList.toggle('active', m === 'game');
+  modeShaderBtn.classList.toggle('active', m === 'shader');
+  modeIdeasBtn.classList.toggle('active', m === 'ideas');
+  modeRRPGBtn.classList.toggle('active', m === 'rrpg');
+  modeARPGBtn.classList.toggle('active', m === 'arpg');
   if (m === 'game') {
     canvas.style.display = 'block';
     shaderCanvas.style.display = 'none';
     shaderUI.style.display = 'none';
+    ideasEl.style.display = 'none';
+    rrpgUI.style.display = 'none';
+    arpgUI.style.display = 'none';
     document.querySelector('.hint').style.display = 'block';
     document.querySelector('.scores').style.display = 'inline-flex';
     document.querySelector('.health').style.display = 'block';
     restartBtn.style.display = 'none';
   } else {
     canvas.style.display = 'none';
-    shaderCanvas.style.display = 'block';
-    shaderUI.style.display = 'flex';
     document.querySelector('.hint').style.display = 'none';
     document.querySelector('.scores').style.display = 'none';
     document.querySelector('.health').style.display = 'none';
+    if (m === 'shader') {
+      shaderCanvas.style.display = 'block';
+      shaderUI.style.display = 'flex';
+      ideasEl.style.display = 'none';
+      rrpgUI.style.display = 'none';
+      arpgUI.style.display = 'none';
+    } else {
+      shaderCanvas.style.display = 'none';
+      shaderUI.style.display = 'none';
+      rrpgUI.style.display = 'none';
+      ideasEl.style.display = 'block';
+      if (m === 'rrpg') {
+        ideasEl.style.display = 'none';
+        rrpgUI.style.display = 'flex';
+        canvas.style.display = 'block';
+        arpgUI.style.display = 'none';
+      }
+      if (m === 'arpg') {
+        ideasEl.style.display = 'none';
+        rrpgUI.style.display = 'none';
+        shaderCanvas.style.display = 'none';
+        shaderUI.style.display = 'none';
+        canvas.style.display = 'block';
+        arpgUI.style.display = 'flex';
+      }
+    }
   }
 }
 modeGameBtn.addEventListener('click', () => setMode('game'));
 modeShaderBtn.addEventListener('click', () => setMode('shader'));
-setMode('game');
+modeIdeasBtn.addEventListener('click', () => setMode('ideas'));
+modeRRPGBtn.addEventListener('click', () => setMode('rrpg'));
+modeARPGBtn.addEventListener('click', () => setMode('arpg'));
+setMode('arpg');
 let best = parseFloat(localStorage.getItem('fun_best') || '0');
 bestEl.textContent = Math.floor(best);
 const keys = new Set();
@@ -137,6 +180,10 @@ function shoot() {
 window.addEventListener('keydown', e => {
   if (e.code === 'Space') { e.preventDefault(); if (running) shoot(); else restart() }
   if (e.key.toLowerCase() === 'j') shoot();
+  if (e.key === '1') setMode('game');
+  if (e.key === '2') setMode('shader');
+  if (e.key === '3') setMode('ideas');
+  if (e.key === '4') setMode('rrpg');
 });
 function initStars() {
   stars = [];
@@ -200,6 +247,148 @@ let currentShader = 'rings';
 function selectShader() { currentShader = shaderSelect.value; makeProgram(shaderSrc(currentShader)) }
 if (gl) { selectShader() }
 shaderSelect.addEventListener('change', () => selectShader());
+const rr = { party: [], enemies: [], nodes: [], links: [], selected: new Set(), turn: 'player', lost: false, won: false };
+function rrSetup() {
+  rr.party = [
+    { name: 'Aerin', hpMax: 80, hp: 80 },
+    { name: 'Kross', hpMax: 100, hp: 100 },
+    { name: 'Lyra', hpMax: 70, hp: 70 },
+  ];
+  rr.enemies = [
+    { name: 'Wisp', hpMax: 60, hp: 60 },
+    { name: 'Golem', hpMax: 120, hp: 120 },
+  ];
+  rr.nodes = [
+    { id: 'A1', x: 0.35, y: 0.45, type: 'attack', label: 'Strike' },
+    { id: 'A2', x: 0.55, y: 0.48, type: 'attack', label: 'Pierce' },
+    { id: 'AMP1', x: 0.45, y: 0.32, type: 'amp', label: 'Amplify' },
+    { id: 'AMP2', x: 0.65, y: 0.35, type: 'amp', label: 'Overload' },
+    { id: 'CHAIN', x: 0.60, y: 0.62, type: 'chain', label: 'Chain' },
+    { id: 'HEAL', x: 0.30, y: 0.62, type: 'heal', label: 'Restore' },
+    { id: 'FOCUS', x: 0.40, y: 0.75, type: 'focus', label: 'Focus' },
+  ];
+  rr.links = [
+    ['A1','AMP1'],['A1','CHAIN'],['A2','AMP2'],['A2','CHAIN'],['HEAL','FOCUS'],['AMP1','AMP2']
+  ];
+  rr.selected = new Set();
+  rr.turn = 'player';
+  rr.lost = false;
+  rr.won = false;
+}
+function rrMetric() {
+  let a=0,b=0,c=0,f=0,h=0;
+  rr.nodes.forEach(n=>{ if(rr.selected.has(n.id)){ if(n.type==='attack') a++; else if(n.type==='amp') b++; else if(n.type==='chain') c++; else if(n.type==='focus') f++; else if(n.type==='heal') h++; } });
+  return { a,b,c,f,h };
+}
+function rrExecute() {
+  if (rr.turn !== 'player' || rr.lost || rr.won) return;
+  const m = rrMetric();
+  const dmg = Math.floor(12*m.a*(1+0.5*m.b) + (m.f>0?5:0));
+  const hits = Math.max(1, m.c+1);
+  const healAmt = Math.floor(10*m.h*(1+0.3*m.f));
+  if (healAmt>0) {
+    let tgt = rr.party.slice().sort((x,y)=> (x.hp/x.hpMax) - (y.hp/y.hpMax))[0];
+    tgt.hp = Math.min(tgt.hpMax, tgt.hp + healAmt);
+  }
+  for (let i=0;i<hits;i++) {
+    const enemy = rr.enemies.find(e=>e.hp>0);
+    if (!enemy) break;
+    enemy.hp -= dmg;
+    if (enemy.hp <= 0) enemy.hp = 0;
+  }
+  rr.selected.clear();
+  if (!rr.enemies.some(e=>e.hp>0)) { rr.won = true; rr.turn = 'player'; return }
+  rr.turn = 'enemy';
+}
+function rrEnemyTurn() {
+  if (rr.turn !== 'enemy' || rr.lost || rr.won) return;
+  for (let i=0;i<rr.enemies.length;i++) {
+    const e = rr.enemies[i];
+    if (e.hp<=0) continue;
+    const dmg = 8 + Math.floor(Math.random()*6);
+    const idx = Math.floor(Math.random()*rr.party.length);
+    const p = rr.party[idx];
+    p.hp -= dmg;
+    if (p.hp<0) p.hp=0;
+  }
+  if (!rr.party.some(p=>p.hp>0)) { rr.lost = true; rr.turn = 'player'; return }
+  rr.turn = 'player';
+}
+function rrReset() { rr.selected.clear() }
+function rrNodeAt(x,y) {
+  const r = Math.max(18, canvas.height*0.015);
+  for (let i=0;i<rr.nodes.length;i++) {
+    const n = rr.nodes[i];
+    const nx = n.x*canvas.width;
+    const ny = n.y*canvas.height;
+    if (Math.hypot(nx-x, ny-y) <= r) return n;
+  }
+  return null;
+}
+canvas.addEventListener('click', e=>{
+  if (mode!=='rrpg') return;
+  const rect = canvas.getBoundingClientRect();
+  const x = e.clientX - rect.left;
+  const y = e.clientY - rect.top;
+  const n = rrNodeAt(x,y);
+  if (!n) return;
+  if (rr.selected.has(n.id)) rr.selected.delete(n.id); else rr.selected.add(n.id);
+});
+rrpgExecuteBtn.addEventListener('click', ()=>{ rrExecute(); rrEnemyTurn() });
+rrpgResetBtn.addEventListener('click', ()=> rrReset());
+const arpg = { init: false, player: null, enemies: [], shots: [], fx: [], aimX: 0, aimY: 0 };
+function arpgSetup(){
+  arpg.player = { x: canvas.width*0.5, y: canvas.height*0.7, r: 16, hpMax: 120, hp: 120, energyMax: 100, energy: 100, speed: 280, dash: 0, i: 0, cd:{ fire:0, heal:0, shield:0 } };
+  arpg.enemies = [];
+  arpg.shots = [];
+  arpg.fx = [];
+  arpg.init = true;
+}
+function arpgSpawn(dt){
+  if (Math.random() < dt*0.7) {
+    const r = 14+Math.random()*10;
+    const x = Math.random()*canvas.width;
+    const y = -20;
+    const hp = 40+Math.random()*40;
+    const sp = 60+Math.random()*90;
+    const hue = 330+Math.random()*40;
+    arpg.enemies.push({ x,y,r,hpMax:hp,hp, sp, hue, tele: 1.2+Math.random()*0.6, t:0 });
+  }
+}
+function arpgFire(){
+  const p = arpg.player;
+  if (p.cd.fire>0 || p.energy<12) return;
+  const a = Math.atan2(arpg.aimY - p.y, arpg.aimX - p.x);
+  const sp = 520;
+  arpg.shots.push({ x:p.x, y:p.y, r:5, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, hue:160 });
+  p.energy -= 12;
+  p.cd.fire = 0.25;
+}
+function arpgHeal(){
+  const p = arpg.player;
+  if (p.cd.heal>0 || p.energy<20 || p.hp>=p.hpMax) return;
+  p.hp = Math.min(p.hpMax, p.hp+28);
+  p.energy -= 20;
+  p.cd.heal = 4;
+}
+function arpgDash(){
+  const p = arpg.player;
+  if (p.dash>0 || p.energy<16) return;
+  p.dash = 0.28;
+  p.energy -= 16;
+  p.i = 0.22;
+}
+function arpgShieldDown(){ arpg.player.cd.shield = 0 }
+function arpgShield(){
+  const p = arpg.player;
+  if (p.energy<10) return;
+  p.cd.shield = 0.1;
+}
+canvas.addEventListener('mousemove', e=>{ const r = canvas.getBoundingClientRect(); arpg.aimX = e.clientX - r.left; arpg.aimY = e.clientY - r.top });
+canvas.addEventListener('mousedown', e=>{ if (mode==='arpg' && e.button===0) arpgFire(); });
+canvas.addEventListener('mouseup', e=>{ if (mode==='arpg' && e.button===2) arpgShieldDown() });
+canvas.addEventListener('contextmenu', e=>{ if (mode==='arpg') e.preventDefault() });
+window.addEventListener('keydown', e=>{ if (mode==='arpg'){ if (e.key==='Shift') arpgDash(); if (e.key.toLowerCase()==='e') arpgHeal() } });
 function loop(now) {
   const dt = Math.min(0.033, (now - last) / 1000);
   last = now;
@@ -212,6 +401,201 @@ function loop(now) {
     gl.uniform1f(uA, parseFloat(param1El.value));
     gl.uniform1f(uB, parseFloat(param2El.value));
     gl.drawArrays(gl.TRIANGLES, 0, 6);
+    requestAnimationFrame(loop);
+    return;
+  }
+  if (mode === 'ideas') { requestAnimationFrame(loop); return }
+  if (mode === 'rrpg') {
+    if (rr.party.length===0) rrSetup();
+    const bg = ctx.createLinearGradient(0, 0, 0, canvas.height);
+    bg.addColorStop(0, '#0b1022');
+    bg.addColorStop(1, '#16132c');
+    ctx.fillStyle = bg;
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.save();
+    ctx.fillStyle = 'rgba(255,255,255,0.06)';
+    ctx.strokeStyle = 'rgba(255,255,255,0.12)';
+    ctx.lineWidth = 2;
+    for (let i=0;i<rr.links.length;i++) {
+      const a = rr.nodes.find(n=>n.id===rr.links[i][0]);
+      const b = rr.nodes.find(n=>n.id===rr.links[i][1]);
+      const ax = a.x*canvas.width, ay = a.y*canvas.height;
+      const bx = b.x*canvas.width, by = b.y*canvas.height;
+      ctx.beginPath();
+      ctx.moveTo(ax, ay);
+      ctx.lineTo(bx, by);
+      ctx.stroke();
+    }
+    for (let i=0;i<rr.nodes.length;i++) {
+      const n = rr.nodes[i];
+      const x = n.x*canvas.width, y = n.y*canvas.height;
+      ctx.save();
+      ctx.shadowColor = rr.selected.has(n.id) ? '#a78bfa' : '#22d3ee';
+      ctx.shadowBlur = rr.selected.has(n.id) ? 18 : 12;
+      const g = ctx.createRadialGradient(x,y,0,x,y,Math.max(18,canvas.height*0.015));
+      if (n.type==='attack') { g.addColorStop(0,'#3be1f7'); g.addColorStop(1,'#22d3ee') }
+      else if (n.type==='amp') { g.addColorStop(0,'#c4b5fd'); g.addColorStop(1,'#a78bfa') }
+      else if (n.type==='chain') { g.addColorStop(0,'#fdba74'); g.addColorStop(1,'#fb923c') }
+      else if (n.type==='heal') { g.addColorStop(0,'#6ee7b7'); g.addColorStop(1,'#22c55e') }
+      else { g.addColorStop(0,'#fde68a'); g.addColorStop(1,'#f59e0b') }
+      ctx.fillStyle = g;
+      ctx.beginPath();
+      ctx.arc(x,y,Math.max(18,canvas.height*0.015),0,Math.PI*2);
+      ctx.fill();
+      ctx.fillStyle = '#e6e8f0';
+      ctx.font = '12px system-ui';
+      ctx.textAlign = 'center';
+      ctx.fillText(n.label, x, y - Math.max(24,canvas.height*0.022));
+      ctx.restore();
+    }
+    const m = rrMetric();
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(16,16,260,96);
+    ctx.fillRect(canvas.width-276,16,260,96);
+    ctx.fillStyle = '#e6e8f0';
+    ctx.font = '14px system-ui';
+    ctx.fillText('Party', 26, 34);
+    let oy = 54;
+    for (let i=0;i<rr.party.length;i++) {
+      const p = rr.party[i];
+      const pct = Math.max(0, Math.min(1, p.hp/p.hpMax));
+      ctx.fillText(`${p.name} ${Math.floor(p.hp)}/${p.hpMax}`, 26, oy-6);
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(26, oy, 200, 12);
+      const gh = ctx.createLinearGradient(26, oy, 26+200*pct, oy);
+      gh.addColorStop(0,'#22c55e'); gh.addColorStop(1,'#84cc16');
+      ctx.fillStyle = gh;
+      ctx.fillRect(26, oy, 200*pct, 12);
+      oy += 24;
+    }
+    ctx.fillStyle = '#e6e8f0';
+    ctx.fillText('Enemies', canvas.width-266, 34);
+    oy = 54;
+    for (let i=0;i<rr.enemies.length;i++) {
+      const e = rr.enemies[i];
+      const pct = Math.max(0, Math.min(1, e.hp/e.hpMax));
+      ctx.fillText(`${e.name} ${Math.floor(e.hp)}/${e.hpMax}`, canvas.width-266, oy-6);
+      ctx.fillStyle = '#111827';
+      ctx.fillRect(canvas.width-266, oy, 200, 12);
+      const eh = ctx.createLinearGradient(canvas.width-266, oy, canvas.width-266+200*pct, oy);
+      eh.addColorStop(0,'#ef4444'); eh.addColorStop(1,'#f97316');
+      ctx.fillStyle = eh;
+      ctx.fillRect(canvas.width-266, oy, 200*pct, 12);
+      oy += 24;
+    }
+    ctx.fillStyle = '#e6e8f0';
+    ctx.fillText(`Attack ${m.a} • Amp ${m.b} • Chain ${m.c} • Heal ${m.h} • Focus ${m.f}`, 26, canvas.height-26);
+    if (rr.won) {
+      ctx.fillStyle = '#a7f3d0';
+      ctx.font = 'bold 18px system-ui';
+      ctx.fillText('Victory', canvas.width*0.5 - 40, 40);
+    } else if (rr.lost) {
+      ctx.fillStyle = '#fecaca';
+      ctx.font = 'bold 18px system-ui';
+      ctx.fillText('Defeat', canvas.width*0.5 - 36, 40);
+    }
+    if (rr.turn==='enemy') { rrEnemyTurn() }
+    requestAnimationFrame(loop);
+    return;
+  }
+  if (mode === 'arpg') {
+    if (!arpg.init) arpgSetup();
+    const p = arpg.player;
+    const bg = ctx.createLinearGradient(0,0,0,canvas.height);
+    bg.addColorStop(0,'#0b1022'); bg.addColorStop(1,'#16132c');
+    ctx.fillStyle = bg; ctx.fillRect(0,0,canvas.width,canvas.height);
+    let vx=0, vy=0;
+    if (keys.has('arrowleft') || keys.has('a')) vx -= 1;
+    if (keys.has('arrowright') || keys.has('d')) vx += 1;
+    if (keys.has('arrowup') || keys.has('w')) vy -= 1;
+    if (keys.has('arrowdown') || keys.has('s')) vy += 1;
+    const len = Math.hypot(vx, vy)||1;
+    p.x += (vx/len)*p.speed*dt; p.y += (vy/len)*p.speed*dt;
+    p.x = clamp(p.x, p.r, canvas.width-p.r); p.y = clamp(p.y, p.r, canvas.height-p.r);
+    p.cd.fire = Math.max(0, p.cd.fire - dt);
+    p.cd.heal = Math.max(0, p.cd.heal - dt);
+    p.cd.shield = Math.max(0, p.cd.shield - dt);
+    p.dash = Math.max(0, p.dash - dt);
+    p.i = Math.max(0, p.i - dt);
+    p.energy = Math.min(p.energyMax, p.energy + dt*12);
+    arpgSpawn(dt);
+    for (let i=arpg.enemies.length-1;i>=0;i--){
+      const e = arpg.enemies[i];
+      e.t += dt;
+      if (e.t>e.tele){
+        const a = Math.atan2(p.y - e.y, p.x - e.x);
+        const sp = 240;
+        arpg.shots.push({ x:e.x, y:e.y, r:6, vx:Math.cos(a)*sp, vy:Math.sin(a)*sp, hue: e.hue });
+        e.t = 0;
+      }
+      e.y += e.sp*dt*0.6;
+      if (e.y>canvas.height+40) arpg.enemies.splice(i,1);
+    }
+    for (let i=arpg.shots.length-1;i>=0;i--){
+      const s = arpg.shots[i];
+      s.x += s.vx*dt; s.y += s.vy*dt;
+      if (s.y<-20 || s.y>canvas.height+20 || s.x<-20 || s.x>canvas.width+20){ arpg.shots.splice(i,1); continue }
+      for (let j=arpg.enemies.length-1;j>=0;j--){
+        const e = arpg.enemies[j];
+        if (Math.hypot(s.x-e.x, s.y-e.y) <= s.r+e.r){
+          e.hp -= 26;
+          if (e.hp<=0){ arpg.enemies.splice(j,1) }
+          arpg.shots.splice(i,1);
+          break;
+        }
+      }
+      if (Math.hypot(s.x-p.x, s.y-p.y) <= s.r+p.r){
+        const block = p.cd.shield>0 ? 0.6 : 1.0;
+        if (p.i<=0) p.hp -= Math.floor(16*block);
+        arpg.shots.splice(i,1);
+      }
+    }
+    ctx.save();
+    ctx.shadowColor = '#22d3ee'; ctx.shadowBlur = 24;
+    const pg = ctx.createRadialGradient(p.x,p.y,0,p.x,p.y,p.r);
+    pg.addColorStop(0,'#3be1f7'); pg.addColorStop(1,'#22d3ee');
+    ctx.fillStyle = pg; ctx.beginPath(); ctx.arc(p.x,p.y,p.r,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.save();
+    for (let i=0;i<arpg.enemies.length;i++){
+      const e = arpg.enemies[i];
+      const g = ctx.createRadialGradient(e.x,e.y,0,e.x,e.y,e.r);
+      g.addColorStop(0, `hsla(${e.hue},85%,65%,1)`);
+      g.addColorStop(1, `hsla(${e.hue},85%,55%,1)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(e.x,e.y,e.r,0,Math.PI*2); ctx.fill();
+      ctx.fillStyle = 'rgba(255,255,255,0.12)';
+      const rr = e.r+8;
+      ctx.beginPath(); ctx.arc(e.x,e.y,rr,0,Math.PI*2);
+      ctx.strokeStyle = 'rgba(255,255,255,0.15)'; ctx.lineWidth = 2; ctx.stroke();
+    }
+    ctx.restore();
+    ctx.save();
+    for (let i=0;i<arpg.shots.length;i++){
+      const s = arpg.shots[i];
+      ctx.shadowColor = 'rgba(167,243,208,0.7)'; ctx.shadowBlur = 12;
+      const bg = ctx.createRadialGradient(s.x,s.y,0,s.x,s.y,s.r);
+      bg.addColorStop(0,'rgba(213,255,235,1)'); bg.addColorStop(1,'rgba(167,243,208,1)');
+      ctx.fillStyle = bg;
+      ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2); ctx.fill();
+    }
+    ctx.restore();
+    const hpPct = Math.max(0, Math.min(1, p.hp/p.hpMax));
+    const enPct = Math.max(0, Math.min(1, p.energy/p.energyMax));
+    ctx.fillStyle = 'rgba(255,255,255,0.08)';
+    ctx.fillRect(16,16,260,44);
+    ctx.fillRect(16,66,260,18);
+    ctx.fillStyle = '#e6e8f0'; ctx.font = '14px system-ui';
+    ctx.fillText(`HP ${Math.floor(p.hp)}/${p.hpMax}`, 24, 34);
+    ctx.fillText(`EN ${Math.floor(p.energy)}/${p.energyMax}`, 24, 78);
+    const hbg = ctx.createLinearGradient(24, 40, 24+220*hpPct, 40);
+    hbg.addColorStop(0,'#22c55e'); hbg.addColorStop(1,'#84cc16');
+    ctx.fillStyle = hbg; ctx.fillRect(24,40,220*hpPct,12);
+    const ebg = ctx.createLinearGradient(24, 84, 24+220*enPct, 84);
+    ebg.addColorStop(0,'#3be1f7'); ebg.addColorStop(1,'#22d3ee');
+    ctx.fillStyle = ebg; ctx.fillRect(24,84,220*enPct,12);
+    ctx.fillStyle = '#e6e8f0'; ctx.font = '12px system-ui';
+    ctx.fillText(`Fire ${p.cd.fire.toFixed(1)} • Heal ${p.cd.heal.toFixed(1)} • Shield ${p.cd.shield.toFixed(1)} • Dash ${p.dash.toFixed(1)}`, 16, canvas.height-20);
     requestAnimationFrame(loop);
     return;
   }
