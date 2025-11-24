@@ -1,35 +1,36 @@
-# Neon Dodger
+# XY Shader Cookbook
 
-![Neon Dodger Hero](assets/hero.svg)
+Interactive gallery of XY-based fragment shaders rendered in WebGL, with a live control panel and instant preview. Switch between the original arcade game and shader mode.
 
-Arcade canvas game with neon glow. Dodge obstacles, heal with pickups, and blast aliens for bonus points. Smooth controls, juicy particles, and a reactive health gauge.
-
-## Play
+## Try It
 - Local: `python3 -m http.server 8765` then open `http://localhost:8765/`
 - GitHub Pages: enable in repo Settings → Pages, deploy from `main` (root)
 
-## Controls
-- Move: Arrow keys or `WASD`
-- Shoot: `Space` or `J` while alive
-- Restart: press `Space` after game over or click `Restart`
+## Modes
+- Game: original neon-dodger canvas game (arrows/WASD to move, `Space`/`J` to shoot)
+- Shaders: full-screen preview with controls for shader selection and parameters
 
-## Features
-- Glow visuals: gradient background, starfield, trail, and shadows
-- Obstacles to dodge plus shootable alien ships with HP
-- Health gauge with dynamic color and invincibility frames on hit
-- Green heal pickups restore HP with satisfying bursts
-- Particle explosions and subtle camera shake on impacts
-- Score with best record saved in `localStorage`
+## Shader Controls
+- Shader: choose `Rings`, `Checkerboard`, `Plasma`, `Waves`
+- Param A: uniform `u_a`
+- Param B: uniform `u_b`
+- Time: `u_time` animates automatically
+- Resolution: `u_res` set per frame
 
-## Tech
-- Plain HTML/CSS/JS with a single `canvas` render loop
-- No external libraries; fast to load and easy to hack
+## Add Your Shader
+Edit `shaderSrc(name)` in `script.js` and return a fragment body that sets `col` using `uv` (`0..1`) and `p` (`-1..1`):
 
-## Folder Structure
-- `index.html` — game shell and HUD
-- `style.css` — minimal styling and HUD layout
-- `script.js` — game loop, input, physics, rendering
-- `assets/hero.svg` — cover image for README
+```
+// example: stripes
+return `float v = step(0.5, fract(uv.x*u_a)); col = mix(vec3(0.1,0.1,0.3), vec3(0.9,0.8,0.2), v);`;
+```
+
+Available uniforms: `u_time`, `u_res`, `u_a`, `u_b`
+
+## Files
+- `index.html` — UI, game canvas, shader canvas
+- `style.css` — HUD, mode buttons, shader control panel
+- `script.js` — game loop and WebGL shader rendering
 
 ## License
 MIT
