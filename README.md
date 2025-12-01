@@ -1,5 +1,9 @@
 # XY Shader Cookbook
 
+[![JavaScript](https://img.shields.io/badge/JavaScript-ES6+-yellow.svg)](https://www.javascript.com/) [![GitHub stars](https://img.shields.io/github/stars/yksanjo/xy-shader-cookbook?style=social)](https://github.com/yksanjo/xy-shader-cookbook/stargazers) [![GitHub forks](https://img.shields.io/github/forks/yksanjo/xy-shader-cookbook.svg)](https://github.com/yksanjo/xy-shader-cookbook/network/members) [![GitHub issues](https://img.shields.io/github/issues/yksanjo/xy-shader-cookbook.svg)](https://github.com/yksanjo/xy-shader-cookbook/issues)
+[![Last commit](https://img.shields.io/github/last-commit/yksanjo/xy-shader-cookbook.svg)](https://github.com/yksanjo/xy-shader-cookbook/commits/main)
+
+
 Interactive gallery of XY-based fragment shaders rendered in WebGL, with a live control panel and instant preview. Switch between the original arcade game and shader mode.
 
 ## Try It
